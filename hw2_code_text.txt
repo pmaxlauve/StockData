@@ -1,0 +1,205 @@
+
+
+Sub myloop():
+
+For Each ws In Worksheets
+
+    
+        'define lastrow
+    lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    
+        'set column names
+    ws.Range("I1").Value = "Ticker"
+    ws.Range("J1").Value = "Yearly Change"
+    ws.Range("K1").Value = "Percent Change"
+    ws.Range("L1").Value = "Total Stock Volume"
+    ws.Range("P1").Value = "Ticker"
+    ws.Range("Q1").Value = "Value"
+    ws.Range("O2").Value = "Greatest % Increase"
+    ws.Range("O3").Value = "Greatest % Decrease"
+    ws.Range("O4").Value = "Greatest Total Volume"
+    
+    
+    
+    
+    
+        'define variables
+    Dim st_row As Integer
+    Dim i As Long
+    Dim price1, price2, price_diff, vol As Double
+    Dim ticker As String
+    Dim pct_change As Double
+    
+ 
+    
+        'set variables
+    st_row = 2
+    vol = 0
+    price1 = 0
+    price2 = 0
+    price_diff = 0
+    
+    
+        'delete zeroes
+    For i = lastrow To 2 Step -1
+        
+        If ws.Cells(i, 3) = 0 Then
+                
+            ws.Rows(i).EntireRow.Delete
+                
+        End If
+            
+    Next i
+    
+
+            
+            'iterate over all rows of data
+        For i = 2 To lastrow
+  
+            
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+                
+                    'update variables
+                ticker = ws.Cells(i, 1).Value
+                vol = vol + ws.Cells(i, 7).Value
+                price2 = ws.Cells(i, 6).Value
+                price_diff = price2 - price1
+                pct_change = (price2 / price1) - 1
+                    
+                    'update summary columns
+                ws.Range("K" & st_row).Value = pct_change
+                ws.Range("J" & st_row).Value = price_diff
+                ws.Range("L" & st_row).Value = vol
+                ws.Range("I" & st_row).Value = ticker
+                st_row = st_row + 1
+                
+                    'reset variables
+                price1 = 0
+                price2 = 0
+                price_diff = 0
+                pct_change = 0
+                vol = 0
+            
+            ElseIf ws.Cells(i - 1, 1).Value <> ws.Cells(i, 1).Value Then
+                    
+                    'update variables
+                price1 = ws.Cells(i, 3).Value
+                vol = vol + ws.Cells(i, 7).Value
+           
+            Else
+                    
+                    'update variables
+                vol = vol + ws.Cells(i, 7).Value
+        
+            End If
+      
+        Next i
+            
+            'format cells in "K" as a percentage
+         ws.Range("K2:K" & lastrow).NumberFormat = "0.00%"
+         
+            'autofit columns
+         ws.Columns("I:Q").EntireColumn.AutoFit
+        
+            
+        For i = 2 To lastrow
+        
+            If ws.Cells(i, 10).Value < 0 Then
+                    
+                    'color < 0 red
+                ws.Cells(i, 10).Interior.ColorIndex = 3
+                
+                ElseIf ws.Cells(i, 10).Value = "" Then
+                
+                    
+                    'no fill for blank cells
+                ws.Cells(i, 10).Interior.ColorIndex = 0
+
+
+
+        Else
+                
+                    'color >= 0 green
+                ws.Cells(i, 10).Interior.ColorIndex = 4
+                
+            End If
+            
+        Next i
+        
+                    'set "inital" max
+        Max_percent = 0
+            
+                'loop through values
+            For pct_value1 = 2 To lastrow
+                
+                    'if a value is larger than the old max,
+                If ws.Cells(pct_value1, 11).Value > Max_percent Then
+                    
+                        ' store it as the new max
+                    Max_percent = ws.Cells(pct_value1, 11).Value
+                    
+                    ws.Range("P2").Value = ws.Cells(pct_value1, 9).Value
+                    ws.Range("Q2").Value = Max_percent
+                    
+                End If
+                
+                   
+            
+            Next pct_value1
+            
+                            'set "inital" min
+        Min_Percent = 0
+            
+                'loop through values
+            For pct_value2 = 2 To lastrow
+                
+                    'if a value is smaller than the old min,
+                If ws.Cells(pct_value2, 11).Value < Min_Percent Then
+                    
+                        ' store it as the new min
+                    Min_Percent = ws.Cells(pct_value2, 11).Value
+                    
+                    ws.Range("P3") = ws.Cells(pct_value2, 9).Value
+                    ws.Range("Q3") = Min_Percent
+                    
+                End If
+                
+            
+            Next pct_value2
+            
+                    vol_max = 0
+            
+                'loop through values
+            For value0 = 2 To lastrow
+                
+                    'if a value is smaller than the old min,
+                If ws.Cells(value0, 12).Value > vol_max Then
+                    
+                        ' store it as the new min
+                    vol_max = ws.Cells(value0, 12).Value
+                    
+                    ws.Range("P4") = ws.Cells(value0, 9).Value
+                    ws.Range("Q4") = vol_max
+                    
+                End If
+                
+            
+            Next value0
+
+
+        
+        
+        
+        
+        
+        
+        
+        ws.Range("Q2:Q3").NumberFormat = "0.00%"
+        
+
+        
+    Next ws
+
+    
+    
+End Sub
